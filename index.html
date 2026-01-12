@@ -81,8 +81,8 @@
                 </p>
                 <div class="mt-4 flex gap-4">
                     <div class="p-4 bg-green-50 rounded-lg border border-green-100 w-full md:w-1/2">
-                        <h4 class="font-bold text-costana mb-1">Status do Banco de Dados</h4>
-                        <p class="text-sm text-stone-600" id="db-status-text">Verificando...</p>
+                        <h4 class="font-bold text-costana mb-1">Status do Sistema</h4>
+                        <p class="text-sm text-stone-600" id="db-status-text">Inicializando...</p>
                     </div>
                 </div>
             </div>
@@ -91,36 +91,36 @@
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
                 <h3 class="text-xl font-bold text-stone-800 mb-6 flex items-center gap-2">
                     <span class="bg-costana text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">?</span>
-                    Guia Rápido: Como Atualizar
+                    Fluxo de Atualização (Vercel/GitHub)
                 </h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <!-- Step 1 -->
                     <div class="relative pl-4 border-l-2 border-stone-200">
                         <div class="mb-2 text-costana font-bold text-sm uppercase tracking-wide">Passo 01</div>
-                        <h4 class="font-semibold text-stone-800 mb-1">Acesse a Gestão</h4>
-                        <p class="text-sm text-stone-500">Navegue até a aba <strong>Gestão de Dados</strong> no menu superior.</p>
+                        <h4 class="font-semibold text-stone-800 mb-1">Visualizar</h4>
+                        <p class="text-sm text-stone-500">O sistema carrega automaticamente o arquivo <code>banco_dados.csv</code> do repositório.</p>
                     </div>
                     
                     <!-- Step 2 -->
                     <div class="relative pl-4 border-l-2 border-stone-200">
                         <div class="mb-2 text-costana font-bold text-sm uppercase tracking-wide">Passo 02</div>
-                        <h4 class="font-semibold text-stone-800 mb-1">Importe ou Crie</h4>
-                        <p class="text-sm text-stone-500">Use <strong>Opções de Arquivo > Importar CSV</strong> para carregar sua planilha atual ou o botão <strong>Novo</strong> para cadastrar um local.</p>
+                        <h4 class="font-semibold text-stone-800 mb-1">Editar Localmente</h4>
+                        <p class="text-sm text-stone-500">Faça alterações (Novo/Editar/Excluir) na aba <strong>Gestão</strong>. Isso salva apenas no seu navegador.</p>
                     </div>
 
                     <!-- Step 3 -->
                     <div class="relative pl-4 border-l-2 border-stone-200">
                         <div class="mb-2 text-costana font-bold text-sm uppercase tracking-wide">Passo 03</div>
-                        <h4 class="font-semibold text-stone-800 mb-1">Edite os Dados</h4>
-                        <p class="text-sm text-stone-500">Use os botões de <strong>Lápis (Editar)</strong> ou <strong>Lixeira (Excluir)</strong> na tabela para ajustar as informações.</p>
+                        <h4 class="font-semibold text-stone-800 mb-1">Baixar Atualização</h4>
+                        <p class="text-sm text-stone-500">Clique em <strong>Opções > Baixar CSV</strong> para gerar o arquivo atualizado.</p>
                     </div>
 
                     <!-- Step 4 -->
                     <div class="relative pl-4 border-l-2 border-stone-200">
                         <div class="mb-2 text-costana font-bold text-sm uppercase tracking-wide">Passo 04</div>
-                        <h4 class="font-semibold text-stone-800 mb-1">Salve o Backup</h4>
-                        <p class="text-sm text-stone-500">Ao finalizar, vá em <strong>Opções de Arquivo > Baixar CSV Backup</strong> para salvar a versão atualizada no seu computador.</p>
+                        <h4 class="font-semibold text-stone-800 mb-1">Atualizar Repositório</h4>
+                        <p class="text-sm text-stone-500">Substitua o arquivo <code>banco_dados.csv</code> no GitHub pelo novo que você baixou. O site atualizará em minutos.</p>
                     </div>
                 </div>
             </div>
@@ -184,9 +184,10 @@
                         <div class="relative group">
                             <button class="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 text-stone-600 rounded hover:bg-stone-50 text-sm font-medium transition-colors shadow-sm">Opções de Arquivo</button>
                             <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-xl z-20 hidden group-hover:block border border-stone-100">
-                                <div class="p-3 border-b border-stone-100"><p class="text-xs font-bold text-stone-400 mb-2">IMPORTAR CSV</p><input type="file" id="csvInput" accept=".csv" class="w-full text-xs text-stone-500"/></div>
+                                <a href="#" onclick="forceReloadFromServer()" class="block px-4 py-3 text-sm text-costana font-semibold hover:bg-stone-50 border-b">↻ Recarregar do Servidor</a>
+                                <div class="p-3 border-b border-stone-100"><p class="text-xs font-bold text-stone-400 mb-2">IMPORTAR LOCALMENTE</p><input type="file" id="csvInput" accept=".csv" class="w-full text-xs text-stone-500"/></div>
                                 <a href="#" onclick="downloadCSV()" class="block px-4 py-3 text-sm text-stone-700 hover:bg-stone-50">Baixar CSV Backup</a>
-                                <a href="#" onclick="hardReset()" class="block px-4 py-3 text-sm text-red-600 hover:bg-red-50">Resetar Tudo</a>
+                                <a href="#" onclick="hardReset()" class="block px-4 py-3 text-sm text-red-600 hover:bg-red-50">Limpar Tudo</a>
                             </div>
                         </div>
                     </div>
@@ -258,17 +259,67 @@
     <script>
         let appData = [], sortCol = 'id', sortDir = 'asc', charts = {};
 
-        document.addEventListener('DOMContentLoaded', () => { loadFromStorage(); setupListeners(); switchTab('overview'); });
+        document.addEventListener('DOMContentLoaded', () => { initApp(); setupListeners(); switchTab('overview'); });
 
-        function loadFromStorage() {
+        async function initApp() {
+            // 1. Try LocalStorage
             const saved = localStorage.getItem('costanaData');
             if (saved) {
-                try { appData = JSON.parse(saved); document.getElementById('db-status-text').textContent = `Base ativa: ${appData.length} registros.`; } catch(e) {}
-            } else document.getElementById('db-status-text').textContent = "Aguardando dados...";
-            refreshAll();
+                try {
+                    appData = JSON.parse(saved);
+                    document.getElementById('db-status-text').textContent = `Dados recuperados da memória local (${appData.length} registros).`;
+                    document.getElementById('db-status-text').className = "text-sm text-amber-600 font-bold";
+                    refreshAll();
+                    return;
+                } catch(e) {}
+            }
+
+            // 2. If no local data, try fetching 'banco_dados.csv' from root
+            await forceReloadFromServer();
         }
-        function saveToStorage() { localStorage.setItem('costanaData', JSON.stringify(appData)); refreshAll(); }
-        function hardReset() { if(confirm("Apagar tudo?")) { localStorage.removeItem('costanaData'); appData = []; refreshAll(); } }
+
+        async function forceReloadFromServer() {
+            document.getElementById('db-status-text').textContent = "Buscando 'banco_dados.csv' no servidor...";
+            try {
+                const response = await fetch('./banco_dados.csv');
+                if (response.ok) {
+                    const text = await response.text();
+                    const parsed = parseCSVLogic(text);
+                    if (parsed.length > 0) {
+                        appData = parsed;
+                        // Don't autosave to storage yet, let user be 'clean' state until edit
+                        // localStorage.removeItem('costanaData'); 
+                        document.getElementById('db-status-text').textContent = `Dados carregados do servidor (${appData.length} registros).`;
+                        document.getElementById('db-status-text').className = "text-sm text-green-600 font-bold";
+                        refreshAll();
+                    } else {
+                        throw new Error("Arquivo vazio");
+                    }
+                } else {
+                    document.getElementById('db-status-text').textContent = "Arquivo 'banco_dados.csv' não encontrado no repositório.";
+                    document.getElementById('db-status-text').className = "text-sm text-red-600 font-bold";
+                }
+            } catch (err) {
+                console.warn(err);
+                document.getElementById('db-status-text').textContent = "Modo Offline / Sem arquivo base.";
+            }
+        }
+
+        function saveToStorage() { 
+            localStorage.setItem('costanaData', JSON.stringify(appData)); 
+            document.getElementById('db-status-text').textContent = "Alterações salvas localmente (não publicadas).";
+            document.getElementById('db-status-text').className = "text-sm text-amber-600 font-bold";
+            refreshAll(); 
+        }
+        
+        function hardReset() { 
+            if(confirm("Isso limpará os dados do navegador. Se houver um arquivo no servidor, ele será recarregado.")) { 
+                localStorage.removeItem('costanaData'); 
+                appData = []; 
+                initApp(); // Try reloading from server
+            } 
+        }
+        
         function refreshAll() { updateFilterDropdowns(); filterAndRender(); renderCharts(); updateStats(); }
 
         // --- CRUD ---
@@ -376,23 +427,36 @@
                 const r = new FileReader();
                 r.onload = ev => {
                     const txt = ev.target.result;
-                    const delim = (txt.split('\n')[0].match(/;/g)||[]).length > (txt.split('\n')[0].match(/,/g)||[]).length ? ';' : ',';
-                    const rows = txt.split(/\r\n|\n|\r/).slice(1).map(l => {
-                        const c = l.split(delim===';' ? /;(?=(?:(?:[^"]*"){2})*[^"]*$)/ : /,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        if(c.length<5) return null;
-                        const clean = s => s ? s.replace(/^"|"$/g,'').trim() : '';
-                        const pNum = s => { if(!s)return 0; let v=s.toString().replace(/[^\d.,-]/g,''); if(v.includes(',')&&v.includes('.')) v=v.replace(/\./g,'').replace(',','.'); else v=v.replace(',','.'); return parseFloat(v)||0; };
-                        return { 
-                            id:clean(c[0]), name:clean(c[1]), city:clean(c[2]), region:clean(c[3]), 
-                            type:clean(c[4]), address:clean(c[5]), price:pNum(c[6]), rating:pNum(c[7]), 
-                            link:clean(c[8]), phone:clean(c[9]), info:clean(c[10])
-                        };
-                    }).filter(x=>x);
-                    if(rows.length>0 && confirm(`Importar ${rows.length} itens?`)) { appData=rows; saveToStorage(); alert("Importado!"); }
+                    const parsed = parseCSVLogic(txt);
+                    if(parsed.length>0 && confirm(`Importar ${parsed.length} itens?`)) { appData=parsed; saveToStorage(); alert("Importado!"); }
                 };
                 r.readAsText(f);
             });
             ['filter-region','filter-type','filter-text'].forEach(id => document.getElementById(id).addEventListener(id==='filter-text'?'input':'change', filterAndRender));
+        }
+
+        function parseCSVLogic(text) {
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+            const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim());
+            if(lines.length < 2) return [];
+            // Auto-detect delimiter
+            const delim = (lines[0].match(/;/g)||[]).length > (lines[0].match(/,/g)||[]).length ? ';' : ',';
+            
+            return lines.slice(1).map(line => {
+                // Split logic respecting quotes
+                const row = line.split(delim===';' ? /;(?=(?:(?:[^"]*"){2})*[^"]*$)/ : /,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if(row.length<5) return null;
+                const clean = s => s ? s.replace(/^"|"$/g,'').trim() : '';
+                const pNum = s => { if(!s)return 0; let v=s.toString().replace(/[^\d.,-]/g,''); if(v.includes(',')&&v.includes('.')) v=v.replace(/\./g,'').replace(',','.'); else v=v.replace(',','.'); return parseFloat(v)||0; };
+                
+                // Map columns
+                // Expected: ID, Nome, Cidade, Regiao, Tipo, Endereco, Preco, Nota, Link, Tel, Obs
+                return { 
+                    id:clean(row[0]), name:clean(row[1]), city:clean(row[2]), region:clean(row[3]), 
+                    type:clean(row[4]), address:clean(row[5]), price:pNum(row[6]), rating:pNum(row[7]), 
+                    link:clean(row[8]), phone:clean(row[9]), info:clean(row[10])
+                };
+            }).filter(x=>x);
         }
 
         function downloadCSV() {
@@ -402,7 +466,7 @@
                 csv += `${c(d.id)};${c(d.name)};${c(d.city)};${c(d.region)};${c(d.type)};${c(d.address)};${d.price.toLocaleString('pt-BR',{minimumFractionDigits:2})};${d.rating.toLocaleString('pt-BR')};${c(d.link)};${c(d.phone)};${c(d.info)}\n`;
             });
             const url = URL.createObjectURL(new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8'}));
-            const a = document.createElement('a'); a.href=url; a.download=`costana_db.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            const a = document.createElement('a'); a.href=url; a.download=`banco_dados.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
         function switchTab(t) {
