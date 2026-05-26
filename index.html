@@ -43,6 +43,12 @@
         input[type="file"]::file-selector-button { margin-right: 10px; border: none; background: #475C2A; padding: 6px 10px; border-radius: 4px; color: white; cursor: pointer; }
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: initial !important; }
+        body.is-admin .admin-only-flex { display: flex !important; }
+        .admin-only-flex { display: none !important; }
+        body.is-admin .admin-only-th { display: table-cell !important; }
+        .admin-only-th { display: none !important; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -58,10 +64,15 @@
                         <span class="font-medium text-xs tracking-widest text-stone-500 uppercase">Hotelaria</span>
                     </div>
                 </div>
-                <nav class="flex space-x-8">
-                    <button onclick="switchTab('overview')" id="nav-overview" class="tab-active px-1 pt-1 text-sm font-medium transition-colors">Visão Geral</button>
+                <nav class="flex items-center space-x-6">
+                    <button onclick="switchTab('database')" id="nav-database" class="tab-active px-1 pt-1 text-sm font-medium transition-colors">Gestão de Dados</button>
                     <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-inactive px-1 pt-1 text-sm font-medium transition-colors">Dashboard</button>
-                    <button onclick="switchTab('database')" id="nav-database" class="tab-inactive px-1 pt-1 text-sm font-medium transition-colors">Gestão de Dados</button>
+                    <button onclick="switchTab('overview')" id="nav-overview" class="tab-inactive px-1 pt-1 text-sm font-medium transition-colors">Visão Geral</button>
+                    <!-- Admin Login Button -->
+                    <button onclick="openAdminModal()" id="btn-admin-login" title="Acesso Administrador" class="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:border-costana hover:text-costana text-xs font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span id="admin-btn-label">Admin</span>
+                    </button>
                 </nav>
             </div>
         </div>
@@ -180,14 +191,16 @@
                         <div><label class="text-xs font-bold text-stone-500 ml-1">Tipo</label><select id="filter-type" class="w-full border p-2 rounded text-sm bg-white outline-none"><option value="all">Todos</option></select></div>
                     </div>
                     <div class="flex gap-2 flex-wrap justify-end w-full xl:w-auto">
-                        <button onclick="openModal()" class="flex items-center gap-2 px-4 py-2 bg-costana text-white rounded hover:bg-costana-dark text-sm font-medium transition-colors shadow-sm">Novo</button>
+                        <!-- Botão Novo: apenas admin -->
+                        <button onclick="openModal()" class="admin-only flex items-center gap-2 px-4 py-2 bg-costana text-white rounded hover:bg-costana-dark text-sm font-medium transition-colors shadow-sm">Novo</button>
                         <div class="relative group">
                             <button class="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 text-stone-600 rounded hover:bg-stone-50 text-sm font-medium transition-colors shadow-sm">Opções de Arquivo</button>
                             <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-xl z-20 hidden group-hover:block border border-stone-100">
                                 <a href="#" onclick="forceReloadFromServer()" class="block px-4 py-3 text-sm text-costana font-semibold hover:bg-stone-50 border-b">↻ Recarregar do Servidor</a>
-                                <div class="p-3 border-b border-stone-100"><p class="text-xs font-bold text-stone-400 mb-2">IMPORTAR LOCALMENTE</p><input type="file" id="csvInput" accept=".csv" class="w-full text-xs text-stone-500"/></div>
+                                <!-- Importar e Limpar: apenas admin -->
+                                <div class="admin-only p-3 border-b border-stone-100"><p class="text-xs font-bold text-stone-400 mb-2">IMPORTAR LOCALMENTE</p><input type="file" id="csvInput" accept=".csv" class="w-full text-xs text-stone-500"/></div>
                                 <a href="#" onclick="downloadCSV()" class="block px-4 py-3 text-sm text-stone-700 hover:bg-stone-50">Baixar CSV Backup</a>
-                                <a href="#" onclick="hardReset()" class="block px-4 py-3 text-sm text-red-600 hover:bg-red-50">Limpar Tudo</a>
+                                <a href="#" onclick="hardReset()" class="admin-only block px-4 py-3 text-sm text-red-600 hover:bg-red-50">Limpar Tudo</a>
                             </div>
                         </div>
                     </div>
@@ -204,7 +217,7 @@
                                 <th onclick="handleSort('price')" class="sortable px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Preço <span class="icon"></span></th>
                                 <th onclick="handleSort('rating')" class="sortable px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Nota <span class="icon"></span></th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Contato</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Ações</th>
+                                <th class="admin-only-th px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-stone-200" id="table-body"></tbody>
@@ -255,11 +268,86 @@
         </div>
     </div>
 
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="modal-admin" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black opacity-50" onclick="closeAdminModal()"></div>
+        <div class="bg-white w-11/12 md:max-w-sm mx-auto rounded-xl shadow-2xl z-50 p-6">
+            <div class="flex justify-between items-center pb-3 border-b border-stone-100 mb-5">
+                <p class="text-xl font-bold text-costana flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Acesso Administrador
+                </p>
+                <div class="cursor-pointer p-2 hover:bg-stone-100 rounded-full" onclick="closeAdminModal()">
+                    <svg class="stroke-current text-stone-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div id="admin-login-area">
+                <label class="text-xs font-bold text-stone-500 uppercase">Senha</label>
+                <input type="password" id="admin-password-input" class="w-full border border-stone-300 p-2 rounded text-sm mt-1 mb-3 focus:ring-2 focus:ring-costana outline-none" placeholder="Digite a senha de administrador" onkeydown="if(event.key==='Enter') doAdminLogin()">
+                <p id="admin-login-error" class="text-red-500 text-xs mb-3 hidden">Senha incorreta. Tente novamente.</p>
+                <button onclick="doAdminLogin()" class="w-full px-4 py-2 bg-costana text-white rounded hover:bg-costana-dark font-medium text-sm shadow-md transition-transform active:scale-95">Entrar</button>
+            </div>
+            <div id="admin-logout-area" class="hidden">
+                <p class="text-sm text-green-700 font-semibold mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Modo administrador ativo.
+                </p>
+                <button onclick="doAdminLogout()" class="w-full px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 font-medium text-sm transition-colors">Sair do modo admin</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN SCRIPT -->
     <script>
+        // ---- ADMIN AUTH ----
+        const ADMIN_PASSWORD = 'admin2025'; // Altere aqui para a senha desejada
+        let isAdmin = false;
+
+        function openAdminModal() {
+            const modal = document.getElementById('modal-admin');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+            if (isAdmin) {
+                document.getElementById('admin-login-area').classList.add('hidden');
+                document.getElementById('admin-logout-area').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-login-area').classList.remove('hidden');
+                document.getElementById('admin-logout-area').classList.add('hidden');
+                document.getElementById('admin-password-input').value = '';
+                document.getElementById('admin-login-error').classList.add('hidden');
+                setTimeout(() => document.getElementById('admin-password-input').focus(), 50);
+            }
+        }
+        function closeAdminModal() {
+            document.getElementById('modal-admin').classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+        }
+        function doAdminLogin() {
+            const pwd = document.getElementById('admin-password-input').value;
+            if (pwd === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.body.classList.add('is-admin');
+                document.getElementById('admin-btn-label').textContent = 'Admin ✓';
+                document.querySelector('#btn-admin-login').classList.add('border-costana', 'text-costana');
+                closeAdminModal();
+            } else {
+                document.getElementById('admin-login-error').classList.remove('hidden');
+                document.getElementById('admin-password-input').value = '';
+                document.getElementById('admin-password-input').focus();
+            }
+        }
+        function doAdminLogout() {
+            isAdmin = false;
+            document.body.classList.remove('is-admin');
+            document.getElementById('admin-btn-label').textContent = 'Admin';
+            document.querySelector('#btn-admin-login').classList.remove('border-costana', 'text-costana');
+            closeAdminModal();
+        }
+        // ---- FIM ADMIN AUTH ----
+
         let appData = [], sortCol = 'id', sortDir = 'asc', charts = {};
 
-        document.addEventListener('DOMContentLoaded', () => { initApp(); setupListeners(); switchTab('overview'); });
+        document.addEventListener('DOMContentLoaded', () => { initApp(); setupListeners(); switchTab('database'); });
 
         async function initApp() {
             // 1. Try LocalStorage
@@ -399,7 +487,7 @@
                     <td class="px-4 py-3 text-sm font-mono text-stone-700">${d.price>0?'R$ '+d.price.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-'}</td>
                     <td class="px-4 py-3 text-sm font-bold ${d.rating>=4.5?'text-costana':(d.rating<3.8?'text-red-500':'text-stone-600')}">${d.rating>0?d.rating.toLocaleString('pt-BR'):'-'}</td>
                     <td class="px-4 py-3 text-xs text-stone-500 font-mono">${d.phone||'-'}</td>
-                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <td class="admin-only-th px-4 py-3 text-right whitespace-nowrap">
                         <button onclick="openModal('${d.id}')" class="p-1.5 bg-stone-100 text-stone-600 rounded hover:bg-stone-200 mr-1" title="Editar">✎</button>
                         <button onclick="deleteEntry('${d.id}')" class="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100" title="Excluir">🗑</button>
                     </td>
